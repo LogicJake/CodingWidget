@@ -1,0 +1,51 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/appwidget"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/widget_margin"
+    android:orientation="horizontal"
+    android:background="@drawable/github_widget_background">
+    <LinearLayout
+        android:layout_width="40dp"
+        android:orientation="vertical"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="2dp"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_weight="0.6"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:src="@drawable/coding"/>
+        <TextView
+            android:layout_weight="1"
+            android:id="@+id/num"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="520"
+            android:gravity="center"
+            android:textColor="#80000000"/>
+        <TextView
+            android:id="@+id/day"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="1 d"
+            android:gravity="center"
+            android:textColor="#80000000"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:id="@+id/contribution"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
+            android:src="@drawable/contribution"/>
+    </LinearLayout>
+
+
+
+</LinearLayout>
