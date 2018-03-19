@@ -24,11 +24,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="520"
+            android:textSize="10dp"
             android:gravity="center"
             android:textColor="#80000000"/>
         <TextView
             android:id="@+id/day"
             android:layout_weight="1"
+            android:textSize="10dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="1 d"
