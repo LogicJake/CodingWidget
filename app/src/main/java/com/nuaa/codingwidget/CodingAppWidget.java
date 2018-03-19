@@ -55,6 +55,7 @@ public class CodingAppWidget extends AppWidgetProvider {
 
 
         Intent intent = new Intent("android.appwidget.action.MANUAL_UPDATE");
+        intent.setPackage(context.getPackageName()); //指定包名
         PendingIntent pendingIntent2 = PendingIntent.getBroadcast(context, R.id.avatar, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         view.setOnClickPendingIntent(R.id.avatar, pendingIntent2);
 

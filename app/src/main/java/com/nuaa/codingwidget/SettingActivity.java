@@ -50,8 +50,8 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Intent intent = new Intent();
-        intent.setAction("android.appwidget.action.MANUAL_UPDATE");
+        Intent intent = new Intent("android.appwidget.action.MANUAL_UPDATE");
+        intent.setPackage(getPackageName());
         sendBroadcast(intent);
         System.out.println(intent.getAction());
     }
