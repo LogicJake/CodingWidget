@@ -5,7 +5,9 @@ https://raw.githubusercontent.com/LogicJake/CodingWidget/master/app-debug.apk
 ### 安装
 下载安装，将CodingWidget添加到桌面，点击活跃度表格进入设置界面。在设置界面输入Coding用户名。
 ### 更新
-点击个人头像可以手动更新数据  
+点击个人头像可以手动更新数据  
+### 参考
+https://github.com/Nightonke/GithubWidget
 ### 示例
 ![展示](https://github.com/LogicJake/CodingWidget/raw/master/PIC/example.png)  
 
