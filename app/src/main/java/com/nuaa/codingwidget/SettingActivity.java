@@ -10,22 +10,27 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 public class SettingActivity extends AppCompatActivity {
-    private LinearLayout userNameLayout;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
-    private EditText userNameEditText;
+    private EditText userNameEditText,githubUserNameEditText;
+    private boolean flag = false;
+    private boolean flag2 = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
-        userNameLayout = (LinearLayout) findViewById(R.id.user_name_layout);
         userNameEditText = (EditText)findViewById(R.id.user_name_title);
+        githubUserNameEditText = (EditText)findViewById(R.id.github_user_name_title);
         sharedPreferences = getSharedPreferences("UserInfo", MODE_PRIVATE);
         editor = sharedPreferences.edit();
 
         String name = sharedPreferences.getString("userName",null);
         if(name!=null)
             userNameEditText.setText(name);
+
+        name = sharedPreferences.getString("githubUserName",null);
+        if(name!=null)
+            githubUserNameEditText.setText(name);
 
         userNameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -38,6 +43,27 @@ public class SettingActivity extends AppCompatActivity {
                 String name  = userNameEditText.getText().toString();
                 editor.putString("userName",name);
                 editor.commit();
+                flag = true;
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        githubUserNameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String name  = githubUserNameEditText.getText().toString();
+                editor.putString("githubUserName",name);
+                editor.commit();
+                flag2 = true;
             }
 
             @Override
@@ -50,9 +76,15 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Intent intent = new Intent("android.appwidget.action.MANUAL_UPDATE");
-        intent.setPackage(getPackageName());
-        sendBroadcast(intent);
-        System.out.println(intent.getAction());
+        if (flag){
+            Intent intent = new Intent("android.appwidget.action.MANUAL_UPDATE");
+            intent.setPackage(getPackageName());
+            sendBroadcast(intent);
+        }
+        if (flag2){
+            Intent intent = new Intent("android.appwidget.action.MANUAL_UPDATE2");
+            intent.setPackage(getPackageName());
+            sendBroadcast(intent);
+        }
     }
 }

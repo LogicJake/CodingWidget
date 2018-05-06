@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.widget.RemoteViews;
+import android.widget.Toast;
+
 import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -22,14 +24,14 @@ import static android.content.Context.MODE_PRIVATE;
  * Created by SCY on 2018/3/19/0019.
  */
 
-public class AvatarTask extends AsyncTask<String, Void, Bitmap> {
+public class AvatarCodingTask extends AsyncTask<String, Void, Bitmap> {
     private RemoteViews remoteViews;
     private Context context;
     private ComponentName componentName;
     private int appWidgetId;
     SharedPreferences sharedPreferences;
 
-    public AvatarTask(
+    public AvatarCodingTask(
             RemoteViews remoteViews,
             Context context,
             ComponentName componentName,
@@ -91,15 +93,16 @@ public class AvatarTask extends AsyncTask<String, Void, Bitmap> {
     protected void onPostExecute(Bitmap result) {
         super.onPostExecute(result);
         if(result!=null){
-
+            remoteViews.setImageViewBitmap(R.id.avatar,result);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            if (appWidgetId == -1) {
+                appWidgetManager.updateAppWidget(componentName, remoteViews);
+            } else {
+                appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
+            }
         }
-        remoteViews.setImageViewBitmap(R.id.avatar,result);
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        if (appWidgetId == -1) {
-            appWidgetManager.updateAppWidget(componentName, remoteViews);
-        } else {
-            appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
-        }
+        else
+            Toast.makeText(context,"获取头像失败",Toast.LENGTH_SHORT).show();
     }
 
     public Bitmap returnBitMap(String url) {

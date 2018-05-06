@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:initialKeyguardLayout="@layout/coding_app_widget"
-    android:initialLayout="@layout/coding_app_widget"
+    android:initialKeyguardLayout="@layout/github_app_widget"
+    android:initialLayout="@layout/github_app_widget"
     android:minHeight="50dp"
     android:minWidth="250dp"
-    android:previewImage="@drawable/preview"
+    android:previewImage="@drawable/preview2"
     android:resizeMode="horizontal"
     android:updatePeriodMillis="86400000"
     android:widgetCategory="home_screen">
+
 </appwidget-provider>

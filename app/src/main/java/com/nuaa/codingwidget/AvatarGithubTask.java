@@ -5,16 +5,19 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -23,28 +26,23 @@ import static android.content.Context.MODE_PRIVATE;
  * Created by SCY on 2018/3/19/0019.
  */
 
-public class ContributionsTask extends AsyncTask<String, Void, String> {
+public class AvatarGithubTask extends AsyncTask<String, Void, Bitmap> {
     private RemoteViews remoteViews;
     private Context context;
     private ComponentName componentName;
     private int appWidgetId;
-    private int bitmapWidth = 0;
-    private int bitmapHeight = 0;
     SharedPreferences sharedPreferences;
 
-    public ContributionsTask(
+    public AvatarGithubTask(
             RemoteViews remoteViews,
             Context context,
             ComponentName componentName,
-            int appWidgetId,
-            int bitmapWidth,
-            int bitmapHeight) {
+            int appWidgetId)
+    {
         this.remoteViews = remoteViews;
         this.context = context;
         this.componentName = componentName;
         this.appWidgetId = appWidgetId;
-        this.bitmapWidth = bitmapWidth;
-        this.bitmapHeight = bitmapHeight;
         this.sharedPreferences = context.getSharedPreferences("UserInfo", MODE_PRIVATE);
     }
 
@@ -54,11 +52,10 @@ public class ContributionsTask extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected String doInBackground(String... params) {
-        String name = sharedPreferences.getString("userName","kexijia");
-        System.out.println(name);
+    protected Bitmap doInBackground(String... params) {
+        String name = sharedPreferences.getString("githubUserName","LogicJake");
         try {
-            String path = "https://coding.net/api/user/activeness/data/" + name;
+            String path = "https://api.github.com/users/" + name;
             URL url = new URL(path);
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             // 设置请求的方式
@@ -84,7 +81,12 @@ public class ContributionsTask extends AsyncTask<String, Void, String> {
                 is.close();
                 baos.close();
                 System.out.println(baos.toString());
-                return baos.toString();
+                JSONObject jsonObject = new JSONObject(baos.toString());
+                Log.d("res",baos.toString());
+                int id = jsonObject.getInt("id");
+                String urlString = "https://avatars.githubusercontent.com/u/" + id + "?s=" +64;
+                Bitmap pic = returnBitMap(urlString);
+                return pic;
             }
         } catch (Exception e){
             e.printStackTrace();
@@ -93,31 +95,42 @@ public class ContributionsTask extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected void onPostExecute(String result) {
+    protected void onPostExecute(Bitmap result) {
         super.onPostExecute(result);
+        if(result!=null){
+            remoteViews.setImageViewBitmap(R.id.avatar2,result);
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            if (appWidgetId == -1) {
+                appWidgetManager.updateAppWidget(componentName, remoteViews);
+            } else {
+                appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
+            }
+        }
+        else
+            Toast.makeText(context,"获取头像失败",Toast.LENGTH_SHORT).show();
+
+    }
+
+    public Bitmap returnBitMap(String url) {
+        System.out.println(url);
+        URL myFileUrl = null;
+        Bitmap bitmap = null;
         try {
-            JSONObject jsonObject = new JSONObject(result).getJSONObject("data");
-            CharSequence total= jsonObject.getString("total");
-            CharSequence day = jsonObject.getJSONObject("current_active_duration").getString("days")+" d";
-            remoteViews.setTextViewText(R.id.num,total);
-            remoteViews.setTextViewText(R.id.day,day);
-            Bitmap contribution = Util.get2DBitmap(
-                    context,
-                    jsonObject.getJSONArray("daily_activeness"),
-                    Color.parseColor("#D6E685"),
-                    Color.parseColor("#000000"),
-                    bitmapWidth,
-                    bitmapHeight);
-            remoteViews.setImageViewBitmap(R.id.contribution,contribution);
-            System.out.println(contribution);
-        } catch (JSONException e) {
+            myFileUrl = new URL(url);
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        if (appWidgetId == -1) {
-            appWidgetManager.updateAppWidget(componentName, remoteViews);
-        } else {
-            appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
+        try {
+            HttpURLConnection conn = (HttpURLConnection) myFileUrl.openConnection();
+            conn.setDoInput(true);
+            conn.connect();
+            InputStream is = conn.getInputStream();
+            bitmap = BitmapFactory.decodeStream(is);
+            is.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        Log.e("bitmap",bitmap.toString());
+        return bitmap;
     }
 }

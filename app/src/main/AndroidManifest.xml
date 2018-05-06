@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nuaa.codingwidget">
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -21,7 +22,18 @@
                 android:resource="@xml/coding_app_widget_info" />
         </receiver>
 
-        <activity android:name=".SettingActivity"></activity>
+        <activity android:name=".SettingActivity" />
+
+        <receiver android:name=".GithubAppWidget">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.MANUAL_UPDATE2" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/github_app_widget_info" />
+        </receiver>
     </application>
 
 </manifest>

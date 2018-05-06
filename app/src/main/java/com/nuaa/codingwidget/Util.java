@@ -1,6 +1,7 @@
 package com.nuaa.codingwidget;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -16,10 +18,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Created by SCY on 2018/3/19/0019.
@@ -46,6 +51,17 @@ public class Util {
             this.day = day;
             this.level = level;
             this.data = data;
+        }
+
+        @Override
+        public String toString() {
+            return "Day{" +
+                    "year=" + year +
+                    ", month=" + month +
+                    ", day=" + day +
+                    ", level=" + level +
+                    ", data=" + data +
+                    '}';
         }
     }
 
@@ -152,9 +168,59 @@ public class Util {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
+        Log.e("contribuction2", contributions.toString());
 
+        return contributions;
+    }
+
+    public final static String FILL_STRING = "fill=\"";
+    public final static String DATA_STRING = "data-count=\"";
+    public final static String DATE_STRING = "data-date=\"";
+    public static int total;
+    public static ArrayList<Day> getContributionsFromString(String string) {
+        total = 0;
+        ArrayList<Day> contributions = new ArrayList<>();
+        int fillPos = -1;
+        int dataPos = -1;
+        int datePos = -1;
+        while (true) {
+            fillPos = string.indexOf(FILL_STRING, fillPos + 1);
+            dataPos = string.indexOf(DATA_STRING, dataPos + 1);
+            datePos = string.indexOf(DATE_STRING, datePos + 1);
+
+            if (fillPos == -1) break;
+
+            int level = 0;
+            String levelString
+                    = string.substring(fillPos + FILL_STRING.length(),
+                    fillPos + FILL_STRING.length() + 7);
+            switch (levelString) {
+                case "#ebedf0": level = 0; break;
+                case "#c6e48b": level = 1; break;
+                case "#7bc96f": level = 2; break;
+                case "#239a3b": level = 3; break;
+                case "#196127": level = 4; break;
+            }
+
+            int dataEndPos = string.indexOf("\"", dataPos + DATA_STRING.length());
+            String dataString = string.substring(dataPos + DATA_STRING.length(), dataEndPos);
+            int data = Integer.valueOf(dataString);
+            total += data;
+
+            String dateString
+                    = string.substring(datePos + DATE_STRING.length(),
+                    datePos + DATE_STRING.length() + 11);
+
+            contributions.add(new Day(
+                    Integer.valueOf(dateString.substring(0, 4)),
+                    Integer.valueOf(dateString.substring(5, 7)),
+                    Integer.valueOf(dateString.substring(8, 10)),
+                    level,
+                    data
+            ));
+        }
+        System.out.print(contributions.toString());
         return contributions;
     }
 
@@ -272,5 +338,107 @@ public class Util {
         return bitmap;
     }
 
+    public static Map<String, Object> Githubget2DBitmap(
+            Context  context,
+            String data,
+            int baseColor,
+            int textColor,
+            int bitmapWidth,
+            int bitmapHeight) {
+        Map<String, Object> res = new HashMap<String, Object>();
+        Bitmap bitmap;
+        Canvas canvas;
+        Paint blockPaint;
+        Paint monthTextPaint;
+        Paint weekDayTextPaint;
+        boolean monthBelow = false;
+        int startWeekDay = 0;
+
+        ArrayList<Day> contributions = Util.getContributionsFromString(data);
+        int horizontalBlockNumber = Util.getContributionsColumnNumber();
+        int verticalBlockNumber = 7;
+        float ADJUST_VALUE = 0.8f;
+        float blockWidth = bitmapWidth / (ADJUST_VALUE + horizontalBlockNumber) * (1.0F - 0.1F);
+        float spaceWidth = bitmapWidth / (ADJUST_VALUE + horizontalBlockNumber) - blockWidth;
+        float monthTextHeight = blockWidth * 1.5F;
+        float weekTextHeight = blockWidth;
+        float topMargin = 15f;
+        bitmapHeight = (int)(monthTextHeight + topMargin
+                + verticalBlockNumber * (blockWidth + spaceWidth));
+
+        bitmap = Bitmap.createBitmap(bitmapWidth+40, bitmapHeight, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(bitmap);
+        blockPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        blockPaint.setStyle(Paint.Style.FILL);
+
+        monthTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        monthTextPaint.setTextSize(monthTextHeight);
+        monthTextPaint.setColor(textColor);
+        monthTextPaint.setTypeface(
+                Typeface.createFromAsset(context.getAssets(), "fonts/Lato-Light.ttf"));
+
+        weekDayTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        weekDayTextPaint.setTextSize(weekTextHeight);
+        weekDayTextPaint.setColor(textColor);
+        weekDayTextPaint.setTypeface(
+                Typeface.createFromAsset(context.getAssets(), "fonts/Lato-Light.ttf"));
+
+        // draw the text for weekdays
+        float textStartHeight = (monthBelow ? 0 : monthTextHeight + topMargin)
+                + blockWidth + spaceWidth;
+        Paint.FontMetricsInt fontMetrics = monthTextPaint.getFontMetricsInt();
+        float baseline = (
+                textStartHeight + blockWidth +
+                        textStartHeight -
+                        fontMetrics.bottom - fontMetrics.top) / 2;
+        canvas.drawText(Util.getWeekdayFirstLetter((startWeekDay + 1) % 7),
+                0, baseline, weekDayTextPaint);
+        canvas.drawText(Util.getWeekdayFirstLetter((startWeekDay + 3) % 7),
+                0, baseline + 2 * (blockWidth + spaceWidth), weekDayTextPaint);
+        canvas.drawText(Util.getWeekdayFirstLetter((startWeekDay + 5) % 7),
+                0, baseline + 4 * (blockWidth + spaceWidth), weekDayTextPaint);
+
+        // draw the blocks
+        int currentWeekDay = Util.getWeekDayFromDate(
+                contributions.get(0).year,
+                contributions.get(0).month,
+                contributions.get(0).day);
+        float x = weekTextHeight + topMargin;
+        float y = (currentWeekDay - startWeekDay+ 7) % 7
+                * (blockWidth + spaceWidth)
+                + (monthBelow ? 0 : topMargin + monthTextHeight);
+        int lastMonth = contributions.get(0).month - 1;
+        for (Day day : contributions) {
+            blockPaint.setColor(Util.calculateLevelColor(baseColor, day.level));
+            canvas.drawRect(x, y, x + blockWidth, y + blockWidth, blockPaint);
+
+            currentWeekDay = (currentWeekDay + 1) % 7;
+            if (currentWeekDay == startWeekDay) {
+                // another column
+                x += blockWidth + spaceWidth;
+                y = monthBelow ? 0 : topMargin + monthTextHeight;
+                if (!monthBelow && day.month != lastMonth) {
+                    // judge whether we should draw the text of month
+                    canvas.drawText(
+                            Util.getShortMonthName(day.year, day.month, day.day),
+                            x, monthTextHeight, monthTextPaint);
+                    lastMonth = day.month;
+                }
+            } else {
+                y += blockWidth + spaceWidth;
+                if (monthBelow && currentWeekDay == (startWeekDay + 6) % 7
+                        && day.month != lastMonth) {
+                    // judge whether we should draw the text of month
+                    canvas.drawText(
+                            Util.getShortMonthName(day.year, day.month, day.day),
+                            x, y + monthTextHeight + topMargin, monthTextPaint);
+                    lastMonth = day.month;
+                }
+            }
+        }
+        res.put("bitmap",bitmap);
+        res.put("total",total);
+        return res;
+    }
 
 }
